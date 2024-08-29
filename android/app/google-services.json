@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583313152287",
+    "project_id": "sigs-certifica-app",
+    "storage_bucket": "sigs-certifica-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583313152287:android:2470d3b79f4fc6b197f82a",
+        "android_client_info": {
+          "package_name": "com.example.sigs_certifica_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLxvADLgHg3nh6bpY27ZLh80_z32QfsRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

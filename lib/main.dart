@@ -14,7 +14,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  setupLocator();
+  await setupLocator();
   await getIt.allReady();
 
   if (!kIsWeb) {

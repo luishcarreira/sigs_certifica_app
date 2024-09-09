@@ -15,41 +15,45 @@ class FirebaseNotificationService {
       sound: true,
       alert: true,
     );
-    getDeviceFirebaseToken();
-    _onMessage();
-    _onMessageOpenedApp();
+    await _getDeviceFirebaseToken();
+    _setupMessageHandlers();
   }
 
-  getDeviceFirebaseToken() async {
-    final token = await FirebaseMessaging.instance.getToken(
-        //vapidKey: "BC7XG47azAsRSU0l-5pT6GwHJQbzbkT0-CrIFPuxPLbmgahceEZV-U7vrawws-760KpDVRckw1MF-nylhq5Vwt",
-        );
-    debugPrint('=======================================');
-    debugPrint('TOKEN: $token');
-    debugPrint('=======================================');
+  Future<void> _getDeviceFirebaseToken() async {
+    final token = await FirebaseMessaging.instance.getToken();
+    debugPrint('Firebase Token: $token');
   }
 
-  _onMessage() {
+  void _setupMessageHandlers() {
+    // Handler para notificações recebidas enquanto o app está aberto
     FirebaseMessaging.onMessage.listen((message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
+      _handleForegroundMessage(message);
+    });
 
-      if (notification != null && android != null) {
-        localNotificationService.showSimpleNotification(
-          title: notification.title!,
-          body: notification.body!,
-          payload: message.data['route'] ?? '',
-        );
+    // Handler para notificações que abriram o app
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+    // Verificar se o app foi aberto a partir de uma notificação
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        _handleMessageOpenedApp(message);
       }
     });
   }
 
-  _onMessageOpenedApp() {
-    FirebaseMessaging.onMessageOpenedApp.listen(_goToPageAfterMessage);
+  void _handleForegroundMessage(RemoteMessage message) {
+    final notification = message.notification;
+    if (notification != null) {
+      localNotificationService.showSimpleNotification(
+        title: notification.title ?? 'No Title',
+        body: notification.body ?? 'No Body',
+        payload: message.data['route'] ?? '',
+      );
+    }
   }
 
-  _goToPageAfterMessage(message) {
-    final String route = message.data['route'] ?? '';
+  void _handleMessageOpenedApp(RemoteMessage message) {
+    final route = message.data['route'] ?? '';
     if (route.isNotEmpty) {
       routes.go('/notifications', extra: route);
     }

@@ -1,5 +1,7 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:signals/signals_flutter.dart';
+import 'package:sigs_certifica_app/locator.dart';
+import 'package:sigs_certifica_app/presentation/viewmodel/notification/notification_view_model.dart';
 
 class NotificationView extends StatefulWidget {
   const NotificationView(this.payload, {super.key});
@@ -7,59 +9,69 @@ class NotificationView extends StatefulWidget {
   final String? payload;
 
   @override
-  State<NotificationView> createState() => _NotificationViewState();
+  NotificationViewState createState() => NotificationViewState();
 }
 
-class _NotificationViewState extends State<NotificationView> {
-  String? _payload;
-  List<RemoteMessage> _messages = [];
+class NotificationViewState extends State<NotificationView> {
+  late NotificationViewModel viewModel;
 
   @override
   void initState() {
     super.initState();
-    _payload = widget.payload;
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      setState(() {
-        _messages = [..._messages, message];
-      });
-    });
+    // Inicializa a ViewModel usando getIt
+    viewModel = getIt<NotificationViewModel>();
   }
-
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
-        bottom: PreferredSize(
-          preferredSize: preferredSize,
-          child: OverflowBar(
-            spacing: 12,
-            alignment: MainAxisAlignment.start,
-            children: [
-              TextButton(child: const Text('Todas'), onPressed: () {}),
-              TextButton(child: const Text('Arquivadas'), onPressed: () {}),
-            ],
-          ),
-        ),
+        title: const Text('Notificações'),
+        bottom: _buildFilterBar(),
       ),
-      body: Center(
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: _messages.length,
-          itemBuilder: (context, index) {
-            RemoteMessage message = _messages[index];
+      body: Watch.builder(
+        builder: (context) {
+          return ListView.builder(
+            itemCount: viewModel.messages.length,
+            itemBuilder: (context, index) {
+              final message = viewModel.messages.elementAt(index);
 
-            return ListTile(
-              title: Text(
-                  message.messageId ?? 'no RemoteMessage.messageId available'),
-              subtitle: Text(
-                  message.sentTime?.toString() ?? DateTime.now().toString()),
-              onTap: () => {},
-            );
-          },
-        ),
+              return ListTile(
+                title: Text(message.messageId ?? 'No Message ID'),
+                subtitle: Text(message.sentTime?.toString() ?? 'No Time'),
+                onTap: () {
+                  debugPrint("Notificação clicada: ${message.messageId}");
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildFilterBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(48.0),
+      child: OverflowBar(
+        spacing: 12,
+        alignment: MainAxisAlignment.start,
+        children: [
+          TextButton(
+            child: const Text('Todas'),
+            onPressed: () {
+              setState(() {
+                // Lógica para mostrar todas as notificações
+              });
+            },
+          ),
+          TextButton(
+            child: const Text('Arquivadas'),
+            onPressed: () {
+              //viewModel.clearArchivedNotifications(); // Limpa notificações
+            },
+          ),
+        ],
       ),
     );
   }

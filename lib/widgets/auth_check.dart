@@ -22,18 +22,25 @@ class _AuthCheckState extends State<AuthCheck> {
 
   checkLocalAuth() async {
     final auth = getIt<LocalAuthService>();
-    final isLocalAuthAvailable = await auth.isBiometricAvailable();
-    isLocalAuthFailed.value = false;
+    final isBiometricEnabled = await auth.isBiometricEnabled();
 
-    if (isLocalAuthAvailable) {
-      final authenticated = await auth.authenticate();
+    if (isBiometricEnabled) {
+      final isLocalAuthAvailable = await auth.isBiometricAvailable();
+      isLocalAuthFailed.value = false;
 
-      if (!authenticated) {
-        isLocalAuthFailed.value = true;
-      } else {
-        if (!mounted) return;
-        context.push('/home');
+      if (isLocalAuthAvailable) {
+        final authenticated = await auth.authenticate();
+
+        if (!authenticated) {
+          isLocalAuthFailed.value = true;
+        } else {
+          if (!mounted) return;
+          context.push('/home');
+        }
       }
+    } else {
+      // Se a biometria não estiver habilitada, redireciona para o login normal
+      context.push('/login');
     }
   }
 
